@@ -12,7 +12,7 @@ export class UserService {
         private readonly userEntityRepository: Repository<UserEntity>
     ) { }
 
-    async createUser(createUserDto: CreateUserDto): Promise<UserEntity>{
+    async registration(createUserDto: CreateUserDto): Promise<UserEntity>{
         const checkEmail = await this.findOne(createUserDto.email);
         if(checkEmail){
             throw new HttpException('User email already taken', HttpStatus.FOUND);
@@ -29,8 +29,8 @@ export class UserService {
         return user;
     }
 
-    private async findOne(email: string): Promise<UserEntity[]>{
-        const user = await this.userEntityRepository.find({where: {email: email}})
+    private async findOne(email: string): Promise<UserEntity>{
+        const user = await this.userEntityRepository.findOne({where: {email: email}})
         return user
     }
 }
