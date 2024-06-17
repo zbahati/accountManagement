@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Inject, Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -16,7 +16,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       database: configServie.getOrThrow('DB'),
       autoLoadEntities: true,
       synchronize: true
-    })
+    }),
+
+    inject: [ConfigService]
   }),
     UserModule
   ],
