@@ -15,8 +15,7 @@ export class UserController {
     }
 
     @Post('login')
-    async login(@Body() loginUserDto: LoginUserDto, @Res({passthrough: true}) response: Response): Promise<{token: string,user: UserEntity;
-    }>{
+    async login(@Body() loginUserDto: LoginUserDto, @Res({passthrough: true}) response: Response): Promise<{token: string}>{
         return this.userService.login(loginUserDto, response)
     }
 }

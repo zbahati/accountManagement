@@ -33,7 +33,7 @@ export class UserService {
         return user;
     }
 
-    async login(loginUserDto: LoginUserDto, response: Response): Promise<{token: string, user: UserEntity}>{
+    async login(loginUserDto: LoginUserDto, response: Response): Promise<{token: string}>{
         const user = await this.findOne(loginUserDto.email);
         if(!user){
             throw new UnauthorizedException()
@@ -49,10 +49,7 @@ export class UserService {
         const payload = {sub: user.id, email: user.email}
         const access_token = await this.jwtService.signAsync(payload)
         response.cookie('jwt', access_token)
-        return {
-            token: access_token,
-            user: user,
-        };
+        return {token: access_token}
     }
 
     private async findOne(email: string): Promise<UserEntity>{
