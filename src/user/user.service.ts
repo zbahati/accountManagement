@@ -6,7 +6,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { hashSync, compareSync } from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { JwtSecret } from './contants';
 
 @Injectable()
 export class UserService {
@@ -16,16 +17,16 @@ export class UserService {
         private jwtService: JwtService
     ) { }
 
-    async registration(createUserDto: CreateUserDto): Promise<UserEntity>{
+    async registration(createUserDto: CreateUserDto): Promise<UserEntity> {
         const checkEmail = await this.findOne(createUserDto.email);
-        if(checkEmail){
+        if (checkEmail) {
             throw new HttpException('User email already taken', HttpStatus.FOUND);
         }
 
         const hashPassword = hashSync(createUserDto.password, 16);
 
-        const newUser = new UserEntity({...createUserDto, password: hashPassword});
-        if(!newUser){
+        const newUser = new UserEntity({ ...createUserDto, password: hashPassword });
+        if (!newUser) {
             throw new BadRequestException();
         }
 
@@ -33,27 +34,55 @@ export class UserService {
         return user;
     }
 
-    async login(loginUserDto: LoginUserDto, response: Response): Promise<{token: string}>{
+    async login(loginUserDto: LoginUserDto, response: Response): Promise<string> {
         const user = await this.findOne(loginUserDto.email);
-        if(!user){
+        if (!user) {
             throw new UnauthorizedException()
         }
 
         const password = compareSync(loginUserDto.password, user.password)
 
-        if(!password){
+        if (!password) {
             throw new UnauthorizedException()
         }
         delete user.password
 
-        const payload = {sub: user.id, email: user.email}
+        const payload = { sub: user.id, email: user.email }
         const access_token = await this.jwtService.signAsync(payload)
         response.cookie('jwt', access_token)
-        return {token: access_token}
+        return "User is successfully logged in"
     }
 
-    private async findOne(email: string): Promise<UserEntity>{
-        const user = await this.userEntityRepository.findOne({where: {email: email}})
+    async getUser(request: Request): Promise<UserEntity> {
+       const profile = await this.findUserFromToken(request)
+       return profile
+    }
+
+    async logout(response: Response){
+        response.clearCookie('jwt');
+        return 'logout successfully.'
+    }
+
+    private async findOne(email: string): Promise<UserEntity> {
+        const user = await this.userEntityRepository.findOne({ where: { email: email } })
         return user
+    }
+
+    private async findUserFromToken(request: Request) {
+        const token = request.cookies['jwt'];
+        
+        if (!token) {
+            throw new ForbiddenException()
+        }
+
+        const userProfile =await this.jwtService.verifyAsync(token, { secret: JwtSecret.secret })
+
+        if (!userProfile) {
+            throw new UnauthorizedException()
+        }
+
+        const data = await this.userEntityRepository.findOne({where: {id: userProfile["sub"]}})
+        delete data.password
+        return data;
     }
 }

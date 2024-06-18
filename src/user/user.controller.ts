@@ -1,9 +1,9 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UserEntity } from './entity/user.entity';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -15,7 +15,17 @@ export class UserController {
     }
 
     @Post('login')
-    async login(@Body() loginUserDto: LoginUserDto, @Res({passthrough: true}) response: Response): Promise<{token: string}>{
+    async login(@Body() loginUserDto: LoginUserDto, @Res({passthrough: true}) response: Response): Promise<string>{
         return this.userService.login(loginUserDto, response)
+    }
+
+    @Get('profile')
+    async getUser(@Req() request: Request){
+      return this.userService.getUser(request)
+    }
+
+    @Post('logout')
+    async logout(@Res({passthrough: true}) response: Response ){
+        return this.userService.logout(response)
     }
 }
