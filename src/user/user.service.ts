@@ -54,21 +54,6 @@ export class UserService {
     }
 
     async getUser(request: Request): Promise<UserEntity> {
-       const profile = await this.findUserFromToken(request)
-       return profile
-    }
-
-    async logout(response: Response){
-        response.clearCookie('jwt');
-        return 'logout successfully.'
-    }
-
-    private async findOne(email: string): Promise<UserEntity> {
-        const user = await this.userEntityRepository.findOne({ where: { email: email } })
-        return user
-    }
-
-    private async findUserFromToken(request: Request) {
         const token = request.cookies['jwt'];
         
         if (!token) {
@@ -84,5 +69,15 @@ export class UserService {
         const data = await this.userEntityRepository.findOne({where: {id: userProfile["sub"]}})
         delete data.password
         return data;
+    }
+
+    async logout(response: Response){
+        response.clearCookie('jwt');
+        return 'logout successfully.'
+    }
+    
+    private async findOne(email: string): Promise<UserEntity> {
+        const user = await this.userEntityRepository.findOne({ where: { email: email } })
+        return user
     }
 }

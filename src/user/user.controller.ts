@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UserEntity } from './entity/user.entity';
 import { Request, Response } from 'express';
+import { UserGuard } from './user.guard';
 
 @Controller('user')
 export class UserController {
@@ -19,9 +20,16 @@ export class UserController {
         return this.userService.login(loginUserDto, response)
     }
 
+    @UseGuards(UserGuard)
     @Get('profile')
     async getUser(@Req() request: Request){
       return this.userService.getUser(request)
+    }
+
+    @UseGuards(UserGuard)
+    @Get('current')
+    async getCurrent(@Req() req){
+        return req.user.email;
     }
 
     @Post('logout')

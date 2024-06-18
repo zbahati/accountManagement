@@ -16,6 +16,7 @@ import { JwtSecret } from './contants';
 
   }),],
   providers: [UserService],
-  controllers: [UserController]
+  controllers: [UserController],
+  exports: [UserService]
 })
 export class UserModule {}
