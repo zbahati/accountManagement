@@ -4,7 +4,6 @@ import { AccountEntity } from './entity/account.entity';
 import { Repository } from 'typeorm';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { AccountType } from './account.enum';
-import { UserEntity } from 'src/user/entity/user.entity';
 
 @Injectable()
 export class AccountService {
@@ -13,7 +12,7 @@ export class AccountService {
         private readonly accountEntityRepository: Repository<AccountEntity>
     ){}
 
-    async createAccount(createAccountDto: CreateAccountDto, user){
+    async createAccount(createAccountDto: CreateAccountDto, user: any){
         const newAccount = new AccountEntity({...createAccountDto, accountType: AccountType.SAVING, user: user})
         if(!newAccount){
             throw new BadRequestException()
@@ -21,5 +20,16 @@ export class AccountService {
         
         const account = await this.accountEntityRepository.save(newAccount)
         return account
+    }
+
+    async getAccountByUser(user: any){
+        const account = await this.accountEntityRepository.find({
+            where: {
+                user: {
+                    id: user
+                }
+            }
+        });
+        return account;
     }
 }
